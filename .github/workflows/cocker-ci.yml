@@ -1,0 +1,28 @@
+name: Docker CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - name: Build Docker image
+        run: docker build -t app:test .
+
+      - name: Run Docker container
+        run:
+          docker run -d -p 8080:8080 --name test-container app:test
+          
+          sleep 20
+        
+          curl -f http://localhost:8080/actuator/health || exit 1
+        
+          docker stop test-container
+          docker rm test-container
